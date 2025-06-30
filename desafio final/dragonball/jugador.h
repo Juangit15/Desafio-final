@@ -4,20 +4,21 @@
 #include <QGraphicsPixmapItem>
 #include <QObject>
 #include <QKeyEvent>
+#include <QVector>
+#include <QGraphicsRectItem>
 
 class Jugador : public QObject, public QGraphicsPixmapItem {
-    Q_OBJECT  // Necesario para señales/slots
-
+    Q_OBJECT
 public:
     Jugador();
-    void mover();
+    void mover(const QVector<QGraphicsRectItem*>& plataformas);
     void keyPressEvent(QKeyEvent *event) override;
 
 signals:
-    void volverAMenu();  // Señal para volver al menú al presionar ESC
+    void solicitarMenu();
 
 private:
-    qreal velocidadX, velocidadY;
+    qreal velocidadY;
     qreal gravedad;
     bool enSalto;
 };

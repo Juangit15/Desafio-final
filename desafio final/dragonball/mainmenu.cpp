@@ -33,7 +33,7 @@ MainMenu::MainMenu(QWidget *parent) : QWidget(parent) {
 
     // Fondo como QLabel
     QLabel *fondo = new QLabel(this);
-    fondo->setPixmap(QPixmap("C:/Users/juanm/Downloads/Desafio Final, Dragon Ball/recursos/backgroun.png").scaled(800, 300));
+    fondo->setPixmap(QPixmap("C:/Users/juanm/Downloads/Desafio Final, Dragon Ball/recursos/backmenu.png").scaled(800, 300));
     fondo->setScaledContents(true);
     fondo->lower();  // Asegura que quede detrás de los botones
 
@@ -56,4 +56,5 @@ MainMenu::MainMenu(QWidget *parent) : QWidget(parent) {
         this->close();
     });
 }
+
 
