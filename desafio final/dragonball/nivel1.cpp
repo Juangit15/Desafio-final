@@ -1,48 +1,85 @@
 #include "nivel1.h"
-#include "mainmenu.h"
-#include "enemigo.h"
-#include "nivel2.h"
 #include <QGraphicsPixmapItem>
-
-
+#include <QDebug>
 
 Nivel1::Nivel1(QWidget *parent) : QGraphicsView(parent), menuMostrado(false) {
-    scene = new QGraphicsScene(this);
-    setScene(scene);
-    setFixedSize(610, 960);
-    scene->setSceneRect(0, 0, 610, 960);
+    // Cargar la imagen de fondo sin escalar
+    QPixmap fondoPixmap("C:/Users/juanm/Downloads/DragonBall/recursos/torre.png");
 
-    QPixmap fondoPixmap("C:/Users/juanm/Downloads/Desafio Final, Dragon Ball/recursos/torre.png");
-    QGraphicsPixmapItem *fondo = new QGraphicsPixmapItem(fondoPixmap.scaled(600, 951));
+    // Configurar escena con el tamaño exacto del fondo
+    scene = new QGraphicsScene(this);
+    scene->setSceneRect(0, 0, fondoPixmap.width(), fondoPixmap.height());
+    setScene(scene);
+
+    // Configurar vista para que coincida con el tamaño del fondo
+    setFixedSize(fondoPixmap.size());
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    // Agregar fondo (sin escalar)
+    QGraphicsPixmapItem *fondo = new QGraphicsPixmapItem(fondoPixmap);
+    fondo->setPos(0, 0);
     fondo->setZValue(-10);
     scene->addItem(fondo);
 
-    for (int i = 0; i < plataformasTotales; ++i) {
-        int x = 100 + (i % 3) * 120; // más variado: 100, 220, 340
-        int y = 800 - i * 100;       // más separadas verticalmente
-        QGraphicsRectItem *plat = new QGraphicsRectItem(x, y, 150, 20);
-        plat->setPos(x, y);
-        plat->setBrush(Qt::darkGray);
-        scene->addItem(plat);
-        plataformas.append(plat);
+    // Precargar textura de nube
+    QPixmap nubeTexture("C:/Users/juanm/Downloads/DragonBall/recursos/nube.png");
+    if (nubeTexture.isNull()) {
+        qDebug() << "Error: No se pudo cargar la imagen de nube";
+        nubeTexture = QPixmap(200, 20); // Crear una nube por defecto si falla la carga
+        nubeTexture.fill(Qt::lightGray);
     }
 
+    // Crear plataformas con apariencia de nubes
+    for (int i = 0; i < plataformasTotales; ++i) {
+        int x = (i % 2 == 0) ? 100 : fondoPixmap.width() - 300;
+        int y = fondoPixmap.height() - 150 - i * 80;
+
+        // Crear plataforma física (invisible)
+        QGraphicsRectItem *platFisica = new QGraphicsRectItem(0, 0, 200, 20);
+        platFisica->setPos(x, y);
+        platFisica->setBrush(Qt::NoBrush);
+        platFisica->setPen(Qt::NoPen);
+        scene->addItem(platFisica);
+        plataformas.append(platFisica);
+
+        // Crear nube visual
+        QGraphicsPixmapItem *nube = new QGraphicsPixmapItem(nubeTexture.scaled(200, 40));
+        nube->setPos(x, y - 10); // Ajustar posición para que la nube cubra la plataforma
+        nube->setZValue(1); // Encima del fondo pero debajo de personajes
+        scene->addItem(nube);
+    }
+
+    // Configurar a Goku
     goku = new Jugador();
     goku->setZValue(2);
     scene->addItem(goku);
+    // Posicionar a Goku sobre la primera plataforma física
     goku->setPos(plataformas[0]->x() + 20, plataformas[0]->y() - goku->boundingRect().height());
     connect(goku, &Jugador::solicitarMenu, this, &Nivel1::volverAlMenu);
 
+    // Configurar enemigo
     enemigo = new Enemigo();
     enemigo->setZValue(2);
     scene->addItem(enemigo);
-    enemigo->setPos(plataformas[3]->x() + 60, plataformas[3]->y() - enemigo->boundingRect().height());
+    enemigo->setPos(fondoPixmap.width() - 200, plataformas[4]->y() - enemigo->boundingRect().height());
 
+    // Configurar timer
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Nivel1::actualizar);
     timer->start(30);
+
+    // Conexión para eliminar enemigos
+    connect(goku, &Jugador::enemigoEliminado, this, [this](Enemigo* enemigoEliminar) {
+        if (this->enemigo == enemigoEliminar) {
+            this->scene->removeItem(enemigoEliminar);
+            delete enemigoEliminar;
+            this->enemigo = nullptr;
+        }
+    });
 }
 
+// Resto del código (actualizar, volverAlMenu, destructor) permanece igual...
 void Nivel1::actualizar() {
     goku->mover(plataformas);
 
@@ -52,26 +89,35 @@ void Nivel1::actualizar() {
         }
     }
 
-    for (QGraphicsItem* item : goku->collidingItems()) {
-        if (item == enemigo) {
+    if (enemigo && goku->collidesWithItem(enemigo)) {
+        if (goku->y() + goku->boundingRect().height() <
+            enemigo->y() + enemigo->boundingRect().height()/2) {
+            // El enemigo será eliminado por la señal enemigoEliminado
+        } else {
             volverAlMenu();
             return;
         }
     }
 
+    if (goku->y() > scene->height()) {
+        volverAlMenu();
+        return;
+    }
+
     if (goku->y() < plataformas.last()->y() - 40) {
         timer->stop();
-        Nivel2 *nivel2 = new Nivel2();
-        nivel2->show();
-        this->close();
+        emit nivelCompletado();
     }
 }
 
 void Nivel1::volverAlMenu() {
     if (!menuMostrado) {
         menuMostrado = true;
-        MainMenu *menu = new MainMenu();
-        menu->show();
-        this->close();
+        emit solicitarMenu();
     }
+}
+
+Nivel1::~Nivel1() {
+    delete timer;
+    delete scene;
 }

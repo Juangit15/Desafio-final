@@ -13,19 +13,25 @@ class Nivel1 : public QGraphicsView {
     Q_OBJECT
 public:
     Nivel1(QWidget *parent = nullptr);
+    ~Nivel1();
+
+signals:
+    void solicitarMenu();
+    void nivelCompletado();
 
 private slots:
     void actualizar();
-    void volverAlMenu();
 
 private:
+    void volverAlMenu();
+
     QGraphicsScene *scene;
     Jugador *goku;
     QTimer *timer;
-    Enemigo *enemigo;
+    Enemigo *enemigo = nullptr; // Solo una declaración, inicializado como nullptr
     QVector<QGraphicsRectItem*> plataformas;
-    int plataformasTotales = 8;
+    int plataformasTotales = 7;
     bool menuMostrado;
 };
 
-#endif
+#endif // NIVEL1_H

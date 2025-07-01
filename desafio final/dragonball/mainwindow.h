@@ -2,22 +2,31 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QStackedWidget>
+#include <QSize>
 
-QT_BEGIN_NAMESPACE
-namespace Ui {
-class MainWindow;
-}
-QT_END_NAMESPACE
+class MainMenu;
+class Nivel1;
+class Nivel2;
+class Nivel3;
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
-
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private:
-    Ui::MainWindow *ui;
+    void setupWindow();
+    void centerWindow();
+
+    QStackedWidget *stackedWidget;
+    MainMenu *mainMenu;
+    Nivel1 *nivel1;
+    Nivel2 *nivel2;
+    Nivel3 *nivel3;
+
+    const QSize menuSize = QSize(800, 600); // Tamaño fijo para el menú
 };
+
 #endif // MAINWINDOW_H

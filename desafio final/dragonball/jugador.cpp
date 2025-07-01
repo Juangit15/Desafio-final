@@ -1,13 +1,34 @@
 #include "jugador.h"
 #include <QPixmap>
+#include <QTransform>
 
-Jugador::Jugador() {
-    setPixmap(QPixmap("C:/Users/juanm/Downloads/Desafio Final, Dragon Ball/recursos/camina1g.png").scaled(60, 60));
+Jugador::Jugador() : mirandoDerecha(true) {
+    actualizarSprite();
     velocidadY = 0;
     gravedad = 0.5;
     enSalto = false;
     setFlag(QGraphicsItem::ItemIsFocusable);
     setFocus();
+}
+
+void Jugador::actualizarSprite() {
+    QString ruta;
+    if (enSalto) {
+        ruta = mirandoDerecha ? "C:/Users/juanm/Downloads/DragonBall/recursos/salto2g.png"
+                              : "C:/Users/juanm/Downloads/DragonBall/recursos/salto2gL.png";
+    } else {
+        ruta = mirandoDerecha ? "C:/Users/juanm/Downloads/DragonBall/recursos/camina1g.png"
+                              : "C:/Users/juanm/Downloads/DragonBall/recursos/camina1gL.png";
+    }
+
+    QPixmap pixmap(ruta);
+    if (!pixmap.isNull()) {
+        setPixmap(pixmap.scaled(60, 60));
+    }
+}
+
+void Jugador::setGravedad(qreal nuevaGravedad) {
+    gravedad = nuevaGravedad;
 }
 
 void Jugador::mover(const QVector<QGraphicsRectItem*>& plataformas) {
@@ -30,13 +51,30 @@ void Jugador::mover(const QVector<QGraphicsRectItem*>& plataformas) {
             setY(plataforma->y() - boundingRect().height());
             velocidadY = 0;
             enSalto = false;
-            setPixmap(QPixmap("C:/Users/juanm/Downloads/Desafio Final, Dragon Ball/recursos/camina1g.png").scaled(60, 60));
+            actualizarSprite();
             sobrePlataforma = true;
             break;
         }
     }
 
-    if (!sobrePlataforma) enSalto = true;
+    if (!sobrePlataforma) {
+        enSalto = true;
+        actualizarSprite();
+    }
+
+    // Verificar colisión con enemigos (solo si está saltando y cayendo)
+    if (enSalto && velocidadY > 0) {
+        QList<QGraphicsItem*> itemsColisionados = collidingItems();
+        for (QGraphicsItem* item : itemsColisionados) {
+            Enemigo* enemigo = dynamic_cast<Enemigo*>(item);
+            if (enemigo) {
+                // Emitir señal en lugar de eliminar directamente
+                emit enemigoEliminado(enemigo);
+                velocidadY = -8;
+                break;
+            }
+        }
+    }
 
     if (y() > 1600) {
         emit solicitarMenu();
@@ -44,16 +82,33 @@ void Jugador::mover(const QVector<QGraphicsRectItem*>& plataformas) {
 }
 
 void Jugador::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_A)
+    switch (event->key()) {
+    case Qt::Key_A:
         moveBy(-10, 0);
-    else if (event->key() == Qt::Key_D)
+        if (mirandoDerecha) {
+            mirandoDerecha = false;
+            actualizarSprite();
+        }
+        break;
+
+    case Qt::Key_D:
         moveBy(10, 0);
-    else if (event->key() == Qt::Key_Space && !enSalto) {
-        velocidadY = -12;
-        enSalto = true;
-        setPixmap(QPixmap("C:/Users/juanm/Downloads/Desafio Final, Dragon Ball/recursos/salto2g.png").scaled(60, 60));
-    }
-    else if (event->key() == Qt::Key_Escape) {
+        if (!mirandoDerecha) {
+            mirandoDerecha = true;
+            actualizarSprite();
+        }
+        break;
+
+    case Qt::Key_Space:
+        if (!enSalto) {
+            velocidadY = -12;
+            enSalto = true;
+            actualizarSprite();
+        }
+        break;
+
+    case Qt::Key_Escape:
         emit solicitarMenu();
+        break;
     }
 }

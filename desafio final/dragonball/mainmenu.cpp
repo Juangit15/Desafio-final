@@ -1,60 +1,93 @@
 #include "mainmenu.h"
-#include "nivel1.h"
-#include "nivel2.h"
-#include "nivel3.h"
-#include <Qlabel>
 #include <QVBoxLayout>
-
+#include <QLabel>
+#include <QPushButton>
+#include <QPainter>
+#include <QResizeEvent> // Necesario para el redimensionamiento
 
 MainMenu::MainMenu(QWidget *parent) : QWidget(parent) {
-    setWindowTitle("Desafío Final: Dragon Ball");
-    resize(800, 300);
+    setupUI();
+}
 
-    // Crear un widget contenedor para los botones
-    QWidget *buttonContainer = new QWidget(this);
+void MainMenu::setupUI() {
+    // Configurar layout principal
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->setAlignment(Qt::AlignCenter);
+    layout->setContentsMargins(0, 0, 0, 0); // Eliminar márgenes
 
-    // Configurar el layout para los botones
-    QVBoxLayout *layout = new QVBoxLayout(buttonContainer);
-    layout->setContentsMargins(310, 100, 100, 100); // Ajustar márgenes para que no ocupen todo el espacio
+    // Crear label para el fondo
+    background = new QLabel(this);
+    background->setAlignment(Qt::AlignCenter);
+    background->setScaledContents(true);
+    background->lower(); // Asegurar que está detrás de todo
+
+    // Configurar widgets del menú
+    QWidget *menuWidget = new QWidget(this);
+    QVBoxLayout *menuLayout = new QVBoxLayout(menuWidget);
+    menuLayout->setAlignment(Qt::AlignCenter);
+
+    QLabel *title = new QLabel("Desafío Final: Dragon Ball");
+    title->setStyleSheet("QLabel { font-size: 24px; font-weight: bold; color: white; }");
+    title->setAlignment(Qt::AlignCenter);
+    menuLayout->addWidget(title);
 
     QPushButton *nivel1Btn = new QPushButton("Nivel 1: Ascenso al Templo");
-    QPushButton *nivel2Btn = new QPushButton("Nivel 2: Entrenamiento");
-    QPushButton *nivel3Btn = new QPushButton("Nivel 3: Encuentro KamiSama");
+    QPushButton *nivel2Btn = new QPushButton("Nivel 2: Entrenamiento con Mr. Popo");
+    QPushButton *nivel3Btn = new QPushButton("Nivel 3: Encuentro con KamiSama");
 
-    // Estilo para los botones
-    QString buttonStyle = "QPushButton { background: solid #19b72d; border: 2px solid #C0C0C0; padding: 10px; }";
+    QString buttonStyle = "QPushButton { background: solid #19b72d; border: 2px solid #C0C0C0; padding: 10px; font-weight: bold; color: white; }";
     nivel1Btn->setStyleSheet(buttonStyle);
     nivel2Btn->setStyleSheet(buttonStyle);
     nivel3Btn->setStyleSheet(buttonStyle);
 
-    layout->addWidget(nivel1Btn);
-    layout->addWidget(nivel2Btn);
-    layout->addWidget(nivel3Btn);
+    menuLayout->addWidget(nivel1Btn);
+    menuLayout->addWidget(nivel2Btn);
+    menuLayout->addWidget(nivel3Btn);
 
-    // Fondo como QLabel
-    QLabel *fondo = new QLabel(this);
-    fondo->setPixmap(QPixmap("C:/Users/juanm/Downloads/Desafio Final, Dragon Ball/recursos/backmenu.png").scaled(800, 300));
-    fondo->setScaledContents(true);
-    fondo->lower();  // Asegura que quede detrás de los botones
+    // Cargar imagen de fondo
+    QPixmap fondo("C:/Users/juanm/Downloads/DragonBall/recursos/backmenu.png"); // Usar sistema de recursos
+    background->setPixmap(fondo);
 
-    // Conectar señales de los botones
-    connect(nivel1Btn, &QPushButton::clicked, this, [=]() {
-        Nivel1 *nivel = new Nivel1();
-        nivel->show();
-        this->close();
-    });
+    // Añadir el widget del menú al layout principal
+    layout->addWidget(menuWidget);
 
-    connect(nivel2Btn, &QPushButton::clicked, this, [=]() {
-        Nivel2 *nivel = new Nivel2();
-        nivel->show();
-        this->close();
-    });
-
-    connect(nivel3Btn, &QPushButton::clicked, this, [=]() {
-        Nivel3 *nivel = new Nivel3();
-        nivel->show();
-        this->close();
-    });
+    // Conexiones de los botones
+    connect(nivel1Btn, &QPushButton::clicked, this, &MainMenu::nivel1Requested);
+    connect(nivel2Btn, &QPushButton::clicked, this, &MainMenu::nivel2Requested);
+    connect(nivel3Btn, &QPushButton::clicked, this, &MainMenu::nivel3Requested);
 }
 
+void MainMenu::resizeEvent(QResizeEvent *event) {
+    QWidget::resizeEvent(event);
+
+    // Tamaño fijo deseado para el fondo
+    const QSize fixedSize(900, 500);
+
+    if (background) {
+        // Obtener la imagen original
+        QPixmap originalPixmap = background->pixmap(Qt::ReturnByValue);
+        if (!originalPixmap.isNull()) {
+            // Escalar manteniendo relación de aspecto
+            QPixmap scaledPixmap = originalPixmap.scaled(fixedSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+            // Crear una nueva pixmap del tamaño exacto 900x500
+            QPixmap finalPixmap(fixedSize);
+            finalPixmap.fill(Qt::transparent);
+
+            // Pintar la imagen escalada centrada
+            QPainter painter(&finalPixmap);
+            painter.drawPixmap((fixedSize.width() - scaledPixmap.width()) / 2,
+                               (fixedSize.height() - scaledPixmap.height()) / 2,
+                               scaledPixmap);
+            painter.end();
+
+            // Aplicar al fondo
+            background->setPixmap(finalPixmap);
+            background->setGeometry((width() - fixedSize.width()) / 2,
+                                    (height() - fixedSize.height()) / 2,
+                                    fixedSize.width(),
+                                    fixedSize.height());
+        }
+    }
+}
 
