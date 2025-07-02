@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QLabel>
-#include <QPainter> // Añadir esta línea
+#include <QPainter>
 
 class MainMenu : public QWidget {
     Q_OBJECT
@@ -23,4 +23,4 @@ private:
     QLabel *background;
 };
 
-#endif // MAINMENU_H
+#endif

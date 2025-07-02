@@ -27,7 +27,7 @@ void MainMenu::setupUI() {
     menuLayout->setAlignment(Qt::AlignCenter);
 
     QLabel *title = new QLabel("Desafío Final: Dragon Ball");
-    title->setStyleSheet("QLabel { font-size: 24px; font-weight: bold; color: white; }");
+    title->setStyleSheet("QLabel { font-size: 24px; font-weight: bold; color: #000080; }");
     title->setAlignment(Qt::AlignCenter);
     menuLayout->addWidget(title);
 
@@ -61,7 +61,7 @@ void MainMenu::resizeEvent(QResizeEvent *event) {
     QWidget::resizeEvent(event);
 
     // Tamaño fijo deseado para el fondo
-    const QSize fixedSize(900, 500);
+    const QSize fixedSize(1500, 500);
 
     if (background) {
         // Obtener la imagen original

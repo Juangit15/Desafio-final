@@ -28,10 +28,10 @@ private:
     QGraphicsScene *scene;
     Jugador *goku;
     QTimer *timer;
-    Enemigo *enemigo = nullptr; // Solo una declaración, inicializado como nullptr
+    Enemigo *enemigo = nullptr;
     QVector<QGraphicsRectItem*> plataformas;
     int plataformasTotales = 7;
     bool menuMostrado;
 };
 
-#endif // NIVEL1_H
+#endif

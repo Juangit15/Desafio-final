@@ -112,3 +112,31 @@ void Jugador::keyPressEvent(QKeyEvent *event) {
         break;
     }
 }
+
+
+bool Jugador::enCaida() const {
+    return velocidadY > 0;
+}
+
+void Jugador::boostJump(qreal extraHeight) {
+    if (!enSalto) {
+        velocidadY = -12 - extraHeight;
+        enSalto = true;
+        actualizarSprite();
+    }
+}
+
+bool Jugador::isOnPlatform(QGraphicsItem *platform) const {
+    QRectF playerRect = this->boundingRect();
+
+    return this->collidesWithItem(platform) &&
+           (this->y() + playerRect.height() <= platform->y() + 5) &&  // Justo encima
+           (velocidadY >= 0);  // Solo si está cayendo o quieto
+}
+
+void Jugador::reiniciarEstado() {
+    velocidadY = 0;
+    enSalto = false;
+    actualizarSprite();
+}
+

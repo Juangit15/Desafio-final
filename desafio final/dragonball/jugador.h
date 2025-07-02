@@ -6,16 +6,21 @@
 #include <QKeyEvent>
 #include <QVector>
 #include <QGraphicsRectItem>
-#include <QGraphicsScene> // Añadir esta línea
+#include <QGraphicsScene>
 #include "enemigo.h"
 
 class Jugador : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
     Jugador();
+    bool isOnPlatform(QGraphicsItem *platform) const;
+    void boostJump(qreal extraHeight);
     void mover(const QVector<QGraphicsRectItem*>& plataformas);
     void keyPressEvent(QKeyEvent *event) override;
     void setGravedad(qreal nuevaGravedad);
+    void reiniciarEstado();
+    bool enCaida() const;
+    bool estaMirandoDerecha() const { return mirandoDerecha; }
 
 signals:
     void solicitarMenu();
@@ -29,4 +34,4 @@ private:
     void actualizarSprite();
 };
 
-#endif // JUGADOR_H
+#endif

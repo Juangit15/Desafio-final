@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QStackedWidget>
-#include <QSize>
 
 class MainMenu;
 class Nivel1;
@@ -19,14 +18,13 @@ public:
 private:
     void setupWindow();
     void centerWindow();
+    void ajustarVentana();
 
     QStackedWidget *stackedWidget;
     MainMenu *mainMenu;
     Nivel1 *nivel1;
     Nivel2 *nivel2;
     Nivel3 *nivel3;
-
-    const QSize menuSize = QSize(800, 600); // Tamaño fijo para el menú
 };
 
-#endif // MAINWINDOW_H
+#endif

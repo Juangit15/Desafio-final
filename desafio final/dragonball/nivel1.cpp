@@ -3,20 +3,18 @@
 #include <QDebug>
 
 Nivel1::Nivel1(QWidget *parent) : QGraphicsView(parent), menuMostrado(false) {
-    // Cargar la imagen de fondo sin escalar
     QPixmap fondoPixmap("C:/Users/juanm/Downloads/DragonBall/recursos/torre.png");
-
-    // Configurar escena con el tamaño exacto del fondo
     scene = new QGraphicsScene(this);
     scene->setSceneRect(0, 0, fondoPixmap.width(), fondoPixmap.height());
     setScene(scene);
+    setFixedSize(fondoPixmap.size());
 
     // Configurar vista para que coincida con el tamaño del fondo
     setFixedSize(fondoPixmap.size());
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    // Agregar fondo (sin escalar)
+    // Agregar fondo
     QGraphicsPixmapItem *fondo = new QGraphicsPixmapItem(fondoPixmap);
     fondo->setPos(0, 0);
     fondo->setZValue(-10);
@@ -79,19 +77,20 @@ Nivel1::Nivel1(QWidget *parent) : QGraphicsView(parent), menuMostrado(false) {
     });
 }
 
-// Resto del código (actualizar, volverAlMenu, destructor) permanece igual...
 void Nivel1::actualizar() {
     goku->mover(plataformas);
 
+    // Mover el escenario hacia arriba si Goku está saltando alto
     if (goku->y() < plataformas.last()->y() - 200) {
         for (QGraphicsItem *item : scene->items()) {
             if (item != goku) item->moveBy(0, 2);
         }
     }
 
+    // Verificar colisión con enemigo
     if (enemigo && goku->collidesWithItem(enemigo)) {
         if (goku->y() + goku->boundingRect().height() <
-            enemigo->y() + enemigo->boundingRect().height()/2) {
+            enemigo->y() + enemigo->boundingRect().height() / 2) {
             // El enemigo será eliminado por la señal enemigoEliminado
         } else {
             volverAlMenu();
@@ -99,14 +98,18 @@ void Nivel1::actualizar() {
         }
     }
 
+    // Verificar si Goku cayó fuera del escenario
     if (goku->y() > scene->height()) {
         volverAlMenu();
         return;
     }
 
-    if (goku->y() < plataformas.last()->y() - 40) {
+    // Verificar si llegó a la última plataforma
+    if (goku->y() + goku->boundingRect().height() < plataformas.last()->y() &&
+        goku->x() + goku->boundingRect().width() > plataformas.last()->x() &&
+        goku->x() < plataformas.last()->x() + plataformas.last()->boundingRect().width()) {
         timer->stop();
-        emit nivelCompletado();
+        emit nivelCompletado(); // Asegúrate de emitir la señal
     }
 }
 
