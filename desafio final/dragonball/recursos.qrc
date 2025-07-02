@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/recursos">
+        <file>recursos/enemi.png</file>
+        <file>recursos/backmenu.png</file>
+	<file>recursos/objetomr.png</file>
+	<file>recursos/mrpopo.png</file>
+	<file>recursos/background2.jpg</file>
+	<file>recursos/nube.png</file>
+	<file>recursos/salto2gL.png</file>
+	<file>recursos/camina1gL.png</file>
+	<file>recursos/torre.png</file>
+	<file>recursos/camina2g.png</file>
+	<file>recursos/back2.png</file>
+	<file>recursos/salto2g.png</file>
+	<file>recursos/camina1g.png</file>
+    </qresource>
+</RCC>

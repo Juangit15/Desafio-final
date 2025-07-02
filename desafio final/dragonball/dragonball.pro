@@ -9,17 +9,21 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    enemigo.cpp \
     jugador.cpp \
     main.cpp \
     mainmenu.cpp \
     mainwindow.cpp \
-    nivel1.cpp
+    nivel1.cpp \
+    nivel2.cpp
 
 HEADERS += \
+    enemigo.h \
     jugador.h \
     mainmenu.h \
     mainwindow.h \
-    nivel1.h
+    nivel1.h \
+    nivel2.h
 
 FORMS += \
     mainwindow.ui
