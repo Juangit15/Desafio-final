@@ -37,6 +37,7 @@ private:
     void verificarPuzzle();
     void resetLevel();
     void volverAlMenu();
+    void empujarObjetos();
 
     QGraphicsScene *scene;
     Jugador *goku;
@@ -45,6 +46,11 @@ private:
     qreal tiempo;
     bool puzzleResuelto;
     bool modoEmpuje;
+    bool trampolinActivado;
+
+    qreal posInicialPlataformaVer;
+    bool retornarPlataforma;
+    bool plataformaSubio;
 
     QVector<QGraphicsRectItem*> plataformas;
     QVector<qreal> plataformasVelocidades;
@@ -52,3 +58,4 @@ private:
 };
 
 #endif
+

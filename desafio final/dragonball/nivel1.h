@@ -12,8 +12,8 @@
 class Nivel1 : public QGraphicsView {
     Q_OBJECT
 public:
-    Nivel1(QWidget *parent = nullptr);
-    ~Nivel1();
+    explicit Nivel1(QWidget *parent = nullptr);
+    ~Nivel1() override;
 
 signals:
     void solicitarMenu();

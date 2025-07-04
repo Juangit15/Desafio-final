@@ -2,21 +2,53 @@
 #include <QPixmap>
 #include <QTransform>
 
-Jugador::Jugador() : mirandoDerecha(true) {
+Jugador::Jugador() : mirandoDerecha(true),
+    velocidadY(0),
+    gravedad(0.5),
+    enSalto(false),
+    platformVelocity(0),
+    onMovingPlatform(false)
+{
     actualizarSprite();
-    velocidadY = 0;
-    gravedad = 0.5;
-    enSalto = false;
     setFlag(QGraphicsItem::ItemIsFocusable);
     setFocus();
 }
 
+void Jugador::setOnMovingPlatform(bool onPlatform, qreal platformVel) {
+    onMovingPlatform = onPlatform;
+    platformVelocity = platformVel;
+}
+
+bool Jugador::isOnPlatform(QGraphicsItem *platform) const {
+    QRectF playerFeet = QRectF(
+        x() + boundingRect().width() * 0.2,
+        y() + boundingRect().height() - 5,
+        boundingRect().width() * 0.6,
+        5
+        );
+
+    QRectF platformTop = QRectF(
+        platform->x(),
+        platform->y(),
+        platform->boundingRect().width(),
+        10
+        );
+
+    return playerFeet.intersects(platformTop) && velocidadY >= 0;
+}
+
 void Jugador::actualizarSprite() {
     QString ruta;
+
     if (enSalto) {
         ruta = mirandoDerecha ? "C:/Users/juanm/Downloads/DragonBall/recursos/salto2g.png"
                               : "C:/Users/juanm/Downloads/DragonBall/recursos/salto2gL.png";
-    } else {
+    }
+    else if (empujando) {
+        ruta = mirandoDerecha ? "C:/Users/juanm/Downloads/DragonBall/recursos/gokuempuje.png"
+                              : "C:/Users/juanm/Downloads/DragonBall/recursos/gokuempujeL.png";
+    }
+    else {
         ruta = mirandoDerecha ? "C:/Users/juanm/Downloads/DragonBall/recursos/camina1g.png"
                               : "C:/Users/juanm/Downloads/DragonBall/recursos/camina1gL.png";
     }
@@ -24,34 +56,27 @@ void Jugador::actualizarSprite() {
     QPixmap pixmap(ruta);
     if (!pixmap.isNull()) {
         setPixmap(pixmap.scaled(60, 60));
+    } else {
+        qDebug() << "Error: No se pudo cargar" << ruta;
     }
 }
 
-void Jugador::setGravedad(qreal nuevaGravedad) {
-    gravedad = nuevaGravedad;
-}
-
 void Jugador::mover(const QVector<QGraphicsRectItem*>& plataformas) {
+    // Aplicar movimiento de plataforma si corresponde
+    if (onMovingPlatform && platformVelocity != 0) {
+        moveBy(platformVelocity, 0);
+    }
+
+    // Resto de la lógica de movimiento...
     velocidadY += gravedad;
     moveBy(0, velocidadY);
 
     bool sobrePlataforma = false;
-
     for (QGraphicsRectItem* plataforma : plataformas) {
-        QRectF rectGoku = this->sceneBoundingRect();
-        QRectF rectPlataforma = plataforma->sceneBoundingRect();
-
-        bool sobreX = rectGoku.center().x() >= rectPlataforma.left() &&
-                      rectGoku.center().x() <= rectPlataforma.right();
-
-        bool tocaY = rectGoku.bottom() <= rectPlataforma.top() + 5 &&
-                     rectGoku.bottom() >= rectPlataforma.top() - 5;
-
-        if (sobreX && tocaY && velocidadY >= 0) {
+        if (isOnPlatform(plataforma)) {
             setY(plataforma->y() - boundingRect().height());
             velocidadY = 0;
             enSalto = false;
-            actualizarSprite();
             sobrePlataforma = true;
             break;
         }
@@ -59,26 +84,14 @@ void Jugador::mover(const QVector<QGraphicsRectItem*>& plataformas) {
 
     if (!sobrePlataforma) {
         enSalto = true;
-        actualizarSprite();
     }
+    actualizarSprite();
+}
 
-    // Verificar colisión con enemigos (solo si está saltando y cayendo)
-    if (enSalto && velocidadY > 0) {
-        QList<QGraphicsItem*> itemsColisionados = collidingItems();
-        for (QGraphicsItem* item : itemsColisionados) {
-            Enemigo* enemigo = dynamic_cast<Enemigo*>(item);
-            if (enemigo) {
-                // Emitir señal en lugar de eliminar directamente
-                emit enemigoEliminado(enemigo);
-                velocidadY = -8;
-                break;
-            }
-        }
-    }
-
-    if (y() > 1600) {
-        emit solicitarMenu();
-    }
+void Jugador::reiniciarEstado() {
+    velocidadY = 0;
+    enSalto = false;
+    actualizarSprite();
 }
 
 void Jugador::keyPressEvent(QKeyEvent *event) {
@@ -110,33 +123,27 @@ void Jugador::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_Escape:
         emit solicitarMenu();
         break;
+
+    case Qt::Key_S:
+        break;
     }
 }
 
-
-bool Jugador::enCaida() const {
-    return velocidadY > 0;
-}
-
-void Jugador::boostJump(qreal extraHeight) {
-    if (!enSalto) {
-        velocidadY = -12 - extraHeight;
+void Jugador::boostJump(qreal extraForce) {
+    // Aplicar impulso adicional independientemente de si está saltando o no
+    if (velocidadY >= 0) { // Solo si está cayendo o en el suelo
+        velocidadY = -12.0 - extraForce;
         enSalto = true;
         actualizarSprite();
     }
 }
 
-bool Jugador::isOnPlatform(QGraphicsItem *platform) const {
-    QRectF playerRect = this->boundingRect();
-
-    return this->collidesWithItem(platform) &&
-           (this->y() + playerRect.height() <= platform->y() + 5) &&  // Justo encima
-           (velocidadY >= 0);  // Solo si está cayendo o quieto
+void Jugador::setGravedad(qreal nuevaGravedad) {
+    gravedad = nuevaGravedad;
 }
 
-void Jugador::reiniciarEstado() {
-    velocidadY = 0;
-    enSalto = false;
-    actualizarSprite();
+
+bool Jugador::estaMirandoDerecha() const {
+    return mirandoDerecha;
 }
 

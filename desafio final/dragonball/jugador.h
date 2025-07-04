@@ -6,32 +6,38 @@
 #include <QKeyEvent>
 #include <QVector>
 #include <QGraphicsRectItem>
-#include <QGraphicsScene>
-#include "enemigo.h"
 
 class Jugador : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 public:
     Jugador();
-    bool isOnPlatform(QGraphicsItem *platform) const;
     void boostJump(qreal extraHeight);
     void mover(const QVector<QGraphicsRectItem*>& plataformas);
     void keyPressEvent(QKeyEvent *event) override;
     void setGravedad(qreal nuevaGravedad);
+    bool estaMirandoDerecha() const;
+    bool isOnPlatform(QGraphicsItem *platform) const;
+    void setOnMovingPlatform(bool onPlatform, qreal platformVel = 0);
+    qreal getPlatformVelocity() const { return platformVelocity; }
+    qreal getVelocidadY() const { return velocidadY; }
+    bool estaEmpujando() const { return empujando; }
+    void setEmpujando(bool empujar) { empujando = empujar; actualizarSprite(); }
     void reiniciarEstado();
-    bool enCaida() const;
-    bool estaMirandoDerecha() const { return mirandoDerecha; }
+
 
 signals:
     void solicitarMenu();
-    void enemigoEliminado(Enemigo* enemigo); // Nueva señal
+    void enemigoEliminado(QGraphicsPixmapItem* enemigo);
 
 private:
+    bool mirandoDerecha;
     qreal velocidadY;
     qreal gravedad;
     bool enSalto;
-    bool mirandoDerecha;
+    qreal platformVelocity;
+    bool onMovingPlatform;
     void actualizarSprite();
+    bool empujando;
 };
 
 #endif
