@@ -40,6 +40,7 @@ private:
     void empujarObjetos();
 
     QGraphicsScene *scene;
+    QGraphicsRectItem *trampolinRect;
     Jugador *goku;
     QTimer *timer;
     QTimer *platformTimer;
@@ -58,4 +59,3 @@ private:
 };
 
 #endif
-

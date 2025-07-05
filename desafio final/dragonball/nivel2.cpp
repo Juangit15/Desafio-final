@@ -10,7 +10,6 @@ const qreal VELOCIDAD_EMPUJE = 3.0;
 
 Nivel2::Nivel2(QWidget *parent) : QGraphicsView(parent), puzzleResuelto(false), modoEmpuje(false), trampolinActivado(false) {
     setupScene();
-    connect(goku, &Jugador::solicitarMenu, this, &Nivel2::volverAlMenu);
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
 
@@ -60,9 +59,8 @@ void Nivel2::setupScene() {
     connect(platformTimer, &QTimer::timeout, this, &Nivel2::moverPlataformas);
     platformTimer->start(30);
 
-    QGraphicsRectItem *platVer = new QGraphicsRectItem(0, 0, 150, 25);
-    platVer->setPos(600, 600);
-    posInicialPlataformaVer = platVer->y();  // Guardamos la posición inicial
+    connect(goku, &Jugador::solicitarMenu, this, &Nivel2::volverAlMenu);
+
 }
 
 Nivel2::~Nivel2() {
@@ -161,57 +159,48 @@ void Nivel2::moverPlataformas() {
         QGraphicsRectItem *platVer = plataformas[3];
         qreal velVer = plataformasVelocidades[1];
 
-        // Verificar si Goku y al menos un objeto están encima
         bool gokuSobre = goku->isOnPlatform(platVer);
         bool objetoSobre = false;
         QList<QGraphicsItem*> objetosSobre;
 
+        // Verificar si algún objeto está encima
         for (int i = 0; i < 3 && i < obstaculos.size(); i++) {
             QGraphicsItem* objeto = obstaculos[i];
             QRectF objetoBase = objeto->boundingRect();
+            objetoBase.moveTo(objeto->pos());
             objetoBase.setTop(objetoBase.bottom() - 5);
-            if (objetoBase.intersects(QRectF(platVer->x(), platVer->y(), platVer->boundingRect().width(), 5))) {
+
+            QRectF zonaPlataforma(platVer->x(), platVer->y(), platVer->boundingRect().width(), 5);
+
+            if (objetoBase.intersects(zonaPlataforma)) {
                 objetoSobre = true;
                 objetosSobre.append(objeto);
             }
         }
 
-        // Si ambos están encima → subir
-        if (gokuSobre && objetoSobre) {
-            // Si ambos están encima → subir
-            if (gokuSobre && objetoSobre) {
-                if (!plataformaSubio) plataformaSubio = true;
+        // SUBE si hay algo encima
+        if ((gokuSobre || objetoSobre) && platVer->y() > 120) {
+            plataformaSubio = true;
+            platVer->moveBy(0, velVer); // velVer < 0
+            for (QGraphicsItem* obj : objetosSobre) obj->moveBy(0, velVer);
+            if (gokuSobre) goku->moveBy(0, velVer);
+            retornarPlataforma = false;
+        }
 
-                if (platVer->y() <= 120 || platVer->y() >= posInicialPlataformaVer) {
-                    plataformasVelocidades[1] *= -1;
-                    velVer = plataformasVelocidades[1];
-                }
+        // RETORNA si subió antes y ya no hay nada encima
+        else if (plataformaSubio && !gokuSobre && !objetoSobre) {
+            retornarPlataforma = true;
+        }
 
-                platVer->moveBy(0, velVer);
-                for (QGraphicsItem* obj : objetosSobre) obj->moveBy(0, velVer);
-                goku->moveBy(0, velVer);
-
-                retornarPlataforma = false;  // ← Asegurarse de que no retorne mientras sube
-            }
-            // ACTIVAR RETORNO AUTOMÁTICO solo si subió previamente
-            else if (plataformaSubio) {
-                // Revisar si ya nadie está sobre la plataforma
-                if (!gokuSobre && objetosSobre.isEmpty()) {
-                    retornarPlataforma = true;
-                }
-            }
-
-            // Movimiento automático de retorno
-            if (retornarPlataforma) {
-                qreal distancia = posInicialPlataformaVer - platVer->y();
-                if (qAbs(distancia) > 1) {
-                    qreal direccion = (distancia > 0) ? 1 : -1;
-                    platVer->moveBy(0, direccion * 1.5);
-                } else {
-                    retornarPlataforma = false;
-                    plataformaSubio = false;
-                    platVer->setY(posInicialPlataformaVer); // Corrige posición exacta
-                }
+        if (retornarPlataforma) {
+            qreal distancia = posInicialPlataformaVer - platVer->y();
+            if (qAbs(distancia) > 1) {
+                qreal direccion = (distancia > 0) ? 1 : -1;
+                platVer->moveBy(0, direccion * 1.2);
+            } else {
+                retornarPlataforma = false;
+                plataformaSubio = false;
+                platVer->setY(posInicialPlataformaVer); // Corrige posición final
             }
         }
     }
@@ -254,13 +243,15 @@ void Nivel2::aplicarGravedadObjetos() {
 }
 
 void Nivel2::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Escape) {
+        volverAlMenu();
+        return;
+    }
+
     if (event->key() == Qt::Key_S) {
         if (!modoEmpuje) {
             modoEmpuje = true;
-            QString spriteEmpuje = goku->estaMirandoDerecha() ?
-                                       "C:/Users/juanm/Downloads/DragonBall/recursos/gokuempuje.png" :
-                                       "C:/Users/juanm/Downloads/DragonBall/recursos/gokuempujeL.png";
-            goku->setPixmap(QPixmap(spriteEmpuje).scaled(60, 60));
+            goku->setEmpujando(true);
         }
         return;
     }
@@ -294,16 +285,7 @@ void Nivel2::keyPressEvent(QKeyEvent *event) {
 void Nivel2::keyReleaseEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_S) {
         modoEmpuje = false;
-
-        // Regresar sprite normal
-        QTimer::singleShot(100, this, [this]() {
-            if (!modoEmpuje) {
-                QString spriteNormal = goku->estaMirandoDerecha() ?
-                                           "C:/Users/juanm/Downloads/DragonBall/recursos/camina1g.png" :
-                                           "C:/Users/juanm/Downloads/DragonBall/recursos/camina1gL.png";
-                goku->setPixmap(QPixmap(spriteNormal).scaled(60, 60));
-            }
-        });
+        goku->setEmpujando(false);
     }
 
     QGraphicsView::keyReleaseEvent(event);
@@ -311,15 +293,22 @@ void Nivel2::keyReleaseEvent(QKeyEvent *event) {
 
 
 void Nivel2::actualizar() {
-    QGraphicsRectItem* plataformaMovil = plataformas[2];
-    qreal velocidad = plataformasVelocidades[0];
-
-    // Verificar si Goku está sobre la plataforma móvil
-    bool enPlataformaMovil = goku->isOnPlatform(plataformaMovil);
-    goku->setOnMovingPlatform(enPlataformaMovil, enPlataformaMovil ? velocidad : 0);
-
     // Mover Goku
     goku->mover(plataformas);
+
+    for (QGraphicsRectItem* plataforma : plataformas) {
+        if (goku->collidesWithItem(plataforma)) {
+            QRectF gokuRect = goku->sceneBoundingRect();
+            QRectF platRect = plataforma->sceneBoundingRect();
+            if (gokuRect.bottom() >= platRect.top() &&
+                gokuRect.bottom() <= platRect.top() + 10 &&
+                goku->getVelocidadY() >= 0) {
+                goku->setY(plataforma->y() - goku->boundingRect().height());
+                goku->reiniciarEstado();
+                break;
+            }
+        }
+    }
 
     QGraphicsRectItem* trampolin = plataformas[1];
 
@@ -426,6 +415,12 @@ void Nivel2::verificarPuzzle() {
 void Nivel2::resetLevel() {
     goku->setPos(150, plataformas[0]->y() - goku->boundingRect().height());
     goku->reiniciarEstado();
+
+    modoEmpuje = false;
+    QString spriteNormal = goku->estaMirandoDerecha() ?
+                               "C:/Users/juanm/Downloads/DragonBall/recursos/camina1g.png" :
+                               "C:/Users/juanm/Downloads/DragonBall/recursos/camina1gL.png";
+    goku->setPixmap(QPixmap(spriteNormal).scaled(60, 60));
 
     for (int i = 0; i < 3 && i < obstaculos.size(); i++) {
         obstaculos[i]->setPos(120 + i * 80, plataformas[0]->y() - 40);

@@ -34,9 +34,10 @@ void MainWindow::setupWindow() {
             // Conexión para volver al menú
             connect(nivel1, &Nivel1::solicitarMenu, [this]() {
                 stackedWidget->setCurrentWidget(mainMenu);
-                ajustarVentana();
+
                 nivel1->deleteLater();
                 nivel1 = nullptr;
+                ajustarVentana();
             });
 
             // Conexión para completar nivel 1
@@ -47,15 +48,32 @@ void MainWindow::setupWindow() {
 
                     connect(nivel2, &Nivel2::solicitarMenu, [this]() {
                         stackedWidget->setCurrentWidget(mainMenu);
-                        ajustarVentana();
                         nivel2->deleteLater();
                         nivel2 = nullptr;
+                        ajustarVentana();
+                    });
+
+                    connect(nivel2, &Nivel2::nivelCompletado, [this]() {
+                        if (!nivel3) {
+                            nivel3 = new Nivel3();
+                            stackedWidget->addWidget(nivel3);
+                            connect(nivel3, &Nivel3::volverAlMenu, [this]() {
+                                stackedWidget->setCurrentWidget(mainMenu);
+                                nivel3->deleteLater();
+                                nivel3 = nullptr;
+                                ajustarVentana();
+                            });
+                        }
+                        stackedWidget->setCurrentWidget(nivel3);
+                        nivel2->deleteLater();
+                        nivel2 = nullptr;
+                        ajustarVentana();
                     });
                 }
                 stackedWidget->setCurrentWidget(nivel2);
-                ajustarVentana();
                 nivel1->deleteLater();
                 nivel1 = nullptr;
+                ajustarVentana();
             });
         }
         stackedWidget->setCurrentWidget(nivel1);

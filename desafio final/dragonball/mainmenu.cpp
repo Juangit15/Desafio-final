@@ -90,4 +90,3 @@ void MainMenu::resizeEvent(QResizeEvent *event) {
         }
     }
 }
-

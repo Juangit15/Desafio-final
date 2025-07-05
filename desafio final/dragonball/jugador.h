@@ -17,11 +17,9 @@ public:
     void setGravedad(qreal nuevaGravedad);
     bool estaMirandoDerecha() const;
     bool isOnPlatform(QGraphicsItem *platform) const;
-    void setOnMovingPlatform(bool onPlatform, qreal platformVel = 0);
-    qreal getPlatformVelocity() const { return platformVelocity; }
     qreal getVelocidadY() const { return velocidadY; }
     bool estaEmpujando() const { return empujando; }
-    void setEmpujando(bool empujar) { empujando = empujar; actualizarSprite(); }
+    void setEmpujando(bool empujar);
     void reiniciarEstado();
 
 
@@ -34,10 +32,8 @@ private:
     qreal velocidadY;
     qreal gravedad;
     bool enSalto;
-    qreal platformVelocity;
-    bool onMovingPlatform;
     void actualizarSprite();
-    bool empujando;
+    bool empujando = false;
 };
 
 #endif

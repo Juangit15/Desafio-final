@@ -6,35 +6,31 @@ Jugador::Jugador() : mirandoDerecha(true),
     velocidadY(0),
     gravedad(0.5),
     enSalto(false),
-    platformVelocity(0),
-    onMovingPlatform(false)
+    empujando(false)
 {
     actualizarSprite();
     setFlag(QGraphicsItem::ItemIsFocusable);
     setFocus();
 }
 
-void Jugador::setOnMovingPlatform(bool onPlatform, qreal platformVel) {
-    onMovingPlatform = onPlatform;
-    platformVelocity = platformVel;
-}
 
 bool Jugador::isOnPlatform(QGraphicsItem *platform) const {
-    QRectF playerFeet = QRectF(
+    QRectF feetRect = QRectF(
         x() + boundingRect().width() * 0.2,
-        y() + boundingRect().height() - 5,
+        y() + boundingRect().height() - 1,
         boundingRect().width() * 0.6,
-        5
+        2
         );
 
+    QRectF platformRect = platform->sceneBoundingRect();
     QRectF platformTop = QRectF(
-        platform->x(),
-        platform->y(),
-        platform->boundingRect().width(),
-        10
+        platformRect.x(),
+        platformRect.y(),
+        platformRect.width(),
+        5 // margen superior tolerante
         );
 
-    return playerFeet.intersects(platformTop) && velocidadY >= 0;
+    return feetRect.intersects(platformTop) && velocidadY >= 0;
 }
 
 void Jugador::actualizarSprite() {
@@ -61,19 +57,31 @@ void Jugador::actualizarSprite() {
     }
 }
 
-void Jugador::mover(const QVector<QGraphicsRectItem*>& plataformas) {
-    // Aplicar movimiento de plataforma si corresponde
-    if (onMovingPlatform && platformVelocity != 0) {
-        moveBy(platformVelocity, 0);
-    }
+void Jugador::setEmpujando(bool estado) {
+    empujando = estado;
+    actualizarSprite();
+}
 
-    // Resto de la lógica de movimiento...
+void Jugador::mover(const QVector<QGraphicsRectItem*>& plataformas) {
     velocidadY += gravedad;
     moveBy(0, velocidadY);
 
     bool sobrePlataforma = false;
+
+    QRectF gokuFeet = sceneBoundingRect();
+    gokuFeet.setRect(
+        gokuFeet.x() + gokuFeet.width() * 0.2,
+        gokuFeet.y() + gokuFeet.height() - 5,
+        gokuFeet.width() * 0.6,
+        5
+        );
+
     for (QGraphicsRectItem* plataforma : plataformas) {
-        if (isOnPlatform(plataforma)) {
+        QRectF platTop = plataforma->sceneBoundingRect();
+        platTop.setHeight(8);  // margen más tolerante
+
+        if (gokuFeet.intersects(platTop) && velocidadY >= 0) {
+            // Reposicionar con precisión en la parte superior de la plataforma
             setY(plataforma->y() - boundingRect().height());
             velocidadY = 0;
             enSalto = false;
@@ -85,8 +93,12 @@ void Jugador::mover(const QVector<QGraphicsRectItem*>& plataformas) {
     if (!sobrePlataforma) {
         enSalto = true;
     }
+
     actualizarSprite();
 }
+
+
+
 
 void Jugador::reiniciarEstado() {
     velocidadY = 0;
