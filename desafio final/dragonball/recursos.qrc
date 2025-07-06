@@ -10,8 +10,12 @@
 	<file>recursos/camina1gL.png</file>
 	<file>recursos/torre.png</file>
 	<file>recursos/camina2g.png</file>
-	<file>recursos/back2.png</file>
 	<file>recursos/salto2g.png</file>
 	<file>recursos/camina1g.png</file>
+	<file>recursos/gokuempuje.png</file>
+	<file>recursos/gokuempujeL.png</file>
+	<file>recursos/background3.jpg</file>
+	<file>recursos/victory.wav</file>
+	<file>recursos/DragonBall.wav</file>
     </qresource>
 </RCC>
