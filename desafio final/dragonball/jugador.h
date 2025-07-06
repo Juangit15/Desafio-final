@@ -13,6 +13,7 @@ public:
     Jugador();
     void boostJump(qreal extraHeight);
     void mover(const QVector<QGraphicsRectItem*>& plataformas);
+    void moverConGravedad(const QVector<QGraphicsRectItem*>& plataformas, qreal gravedadLocal);
     void keyPressEvent(QKeyEvent *event) override;
     void setGravedad(qreal nuevaGravedad);
     bool estaMirandoDerecha() const;

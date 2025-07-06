@@ -121,4 +121,3 @@ void Nivel1::volverAlMenu() {
         emit solicitarMenu();
     }
 }
-

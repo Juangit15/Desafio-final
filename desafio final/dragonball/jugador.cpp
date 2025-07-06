@@ -13,7 +13,6 @@ Jugador::Jugador() : mirandoDerecha(true),
     setFocus();
 }
 
-
 bool Jugador::isOnPlatform(QGraphicsItem *platform) const {
     QRectF feetRect = QRectF(
         x() + boundingRect().width() * 0.2,
@@ -27,7 +26,7 @@ bool Jugador::isOnPlatform(QGraphicsItem *platform) const {
         platformRect.x(),
         platformRect.y(),
         platformRect.width(),
-        5 // margen superior tolerante
+        5
         );
 
     return feetRect.intersects(platformTop) && velocidadY >= 0;
@@ -78,10 +77,9 @@ void Jugador::mover(const QVector<QGraphicsRectItem*>& plataformas) {
 
     for (QGraphicsRectItem* plataforma : plataformas) {
         QRectF platTop = plataforma->sceneBoundingRect();
-        platTop.setHeight(8);  // margen más tolerante
+        platTop.setHeight(8);
 
         if (gokuFeet.intersects(platTop) && velocidadY >= 0) {
-            // Reposicionar con precisión en la parte superior de la plataforma
             setY(plataforma->y() - boundingRect().height());
             velocidadY = 0;
             enSalto = false;
@@ -97,8 +95,37 @@ void Jugador::mover(const QVector<QGraphicsRectItem*>& plataformas) {
     actualizarSprite();
 }
 
+// 🆕 NUEVA FUNCIÓN SOLO PARA NIVEL 3
+void Jugador::moverConGravedad(const QVector<QGraphicsRectItem*>& plataformas, qreal gravedadLocal) {
+    velocidadY += gravedadLocal;
+    moveBy(0, velocidadY);
 
+    bool sobrePlataforma = false;
 
+    for (QGraphicsRectItem* plataforma : plataformas) {
+        QRectF platRect = plataforma->sceneBoundingRect();
+        QRectF gokuFeet = QRectF(
+            x() + boundingRect().width() * 0.2,
+            y() + boundingRect().height() - 5,
+            boundingRect().width() * 0.6,
+            5
+            );
+
+        if (gokuFeet.intersects(platRect) && velocidadY >= 0) {
+            setY(plataforma->y() - boundingRect().height());
+            velocidadY = 0;
+            enSalto = false;
+            sobrePlataforma = true;
+            break;
+        }
+    }
+
+    if (!sobrePlataforma) {
+        enSalto = true;
+    }
+
+    actualizarSprite();
+}
 
 void Jugador::reiniciarEstado() {
     velocidadY = 0;
@@ -115,7 +142,6 @@ void Jugador::keyPressEvent(QKeyEvent *event) {
             actualizarSprite();
         }
         break;
-
     case Qt::Key_D:
         moveBy(10, 0);
         if (!mirandoDerecha) {
@@ -123,7 +149,6 @@ void Jugador::keyPressEvent(QKeyEvent *event) {
             actualizarSprite();
         }
         break;
-
     case Qt::Key_Space:
         if (!enSalto) {
             velocidadY = -12;
@@ -131,19 +156,16 @@ void Jugador::keyPressEvent(QKeyEvent *event) {
             actualizarSprite();
         }
         break;
-
     case Qt::Key_Escape:
         emit solicitarMenu();
         break;
-
     case Qt::Key_S:
         break;
     }
 }
 
 void Jugador::boostJump(qreal extraForce) {
-    // Aplicar impulso adicional independientemente de si está saltando o no
-    if (velocidadY >= 0) { // Solo si está cayendo o en el suelo
+    if (velocidadY >= 0) {
         velocidadY = -12.0 - extraForce;
         enSalto = true;
         actualizarSprite();
@@ -154,8 +176,6 @@ void Jugador::setGravedad(qreal nuevaGravedad) {
     gravedad = nuevaGravedad;
 }
 
-
 bool Jugador::estaMirandoDerecha() const {
     return mirandoDerecha;
 }
-
