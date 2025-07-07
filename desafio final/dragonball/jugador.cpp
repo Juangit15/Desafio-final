@@ -108,7 +108,7 @@ void Jugador::moverConGravedad(const QVector<QGraphicsRectItem*>& plataformas, q
         QRectF platformRect = plataforma->sceneBoundingRect();
 
         if (gravedadLocal > 0) { // Gravedad normal
-            // Área de pies (parte inferior del jugador)
+            // pies goku
             QRectF feetArea(
                 playerRect.left() + playerRect.width() * 0.2,
                 playerRect.bottom() - 5,  // Pequeña área en los pies

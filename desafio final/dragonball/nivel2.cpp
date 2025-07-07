@@ -432,4 +432,3 @@ void Nivel2::resetLevel() {
 void Nivel2::volverAlMenu() {
     emit solicitarMenu();
 }
-

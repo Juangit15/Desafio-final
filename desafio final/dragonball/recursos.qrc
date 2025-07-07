@@ -17,5 +17,6 @@
 	<file>recursos/background3.jpg</file>
 	<file>recursos/victory.wav</file>
 	<file>recursos/DragonBall.wav</file>
+	<file>recursos/kamisama.png</file>
     </qresource>
 </RCC>

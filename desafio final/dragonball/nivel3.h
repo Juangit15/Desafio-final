@@ -39,7 +39,7 @@ private:
     void crearPlataformas();
     void crearSensores();
     void verificarSensores();
+    void mostrarVictoria();
 };
 
 #endif
-

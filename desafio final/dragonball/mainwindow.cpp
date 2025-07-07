@@ -80,7 +80,7 @@ void MainWindow::setupWindow() {
         ajustarVentana();
     });
 
-    // Conexión DIRECTA del menú al nivel 2 (debe estar FUERA del connect de nivel1Requested)
+    // Conexión DIRECTA del menú al nivel 2
     connect(mainMenu, &MainMenu::nivel2Requested, [this]() {
         if (!nivel2) {
             nivel2 = new Nivel2();
@@ -132,3 +132,4 @@ MainWindow::~MainWindow() {
     if (nivel2) nivel2->deleteLater();
     if (nivel3) nivel3->deleteLater();
 }
+

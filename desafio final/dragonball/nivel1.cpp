@@ -2,9 +2,6 @@
 #include <QGraphicsPixmapItem>
 #include <QDebug>
 
-#include "nivel1.h"
-#include <QGraphicsPixmapItem>
-#include <QDebug>
 
 Nivel1::Nivel1(QWidget *parent) : QGraphicsView(parent), menuMostrado(false) {
     QPixmap fondoPixmap("C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/torre.png");

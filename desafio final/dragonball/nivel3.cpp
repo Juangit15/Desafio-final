@@ -2,10 +2,12 @@
 #include <QGraphicsPixmapItem>
 #include <QKeyEvent>
 #include <QDebug>
+#include <QGraphicsTextItem>
+#include <QGraphicsColorizeEffect>
 #include <windows.h>
 #include <mmsystem.h>
-#include <QGraphicsColorizeEffect>  // ← Para aplicar efectos visuales
-#include <QMessageBox>              // ← Para mostrar mensajes emergentes
+#include <QFile>
+
 
 Nivel3::Nivel3(QWidget *parent): QGraphicsView(parent), gravedadActual(0.5), enZonaGravedad(false), juegoTerminado(false) {
     setupScene();
@@ -23,15 +25,6 @@ void Nivel3::setupScene() {
     QGraphicsPixmapItem *background = new QGraphicsPixmapItem(fondo.scaled(990, 690));
     background->setZValue(-1);
     scene->addItem(background);
-
-    QPixmap kamiPixmap("C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/kamisama.png");
-    if (!kamiPixmap.isNull()) {
-        kami = new QGraphicsPixmapItem(kamiPixmap.scaled(120, 120));
-        kami->setPos(850, 100);
-        kami->setZValue(1);
-        kami->setOpacity(0.9); // inicial
-        scene->addItem(kami);
-    }
 
     // Primero crear plataformas (ANTES que Goku)
     crearPlataformas();
@@ -152,54 +145,67 @@ void Nivel3::cambiarGravedad() {
 void Nivel3::verificarSensores() {
     if (sensores.size() < 3) return;
 
-    // Sensor de gravedad invertida
     if (goku->collidesWithItem(sensores[0])) {
-        gravedadActual = -0.5;  // Valor más fuerte para mejor efecto
+        gravedadActual = -0.5;
         goku->setGravedad(gravedadActual);
-    }
-    // Sensor para volver a gravedad normal
-    else if (goku->collidesWithItem(sensores[1])) {
+    } else if (goku->collidesWithItem(sensores[1])) {
         gravedadActual = 0.5;
         goku->setGravedad(gravedadActual);
-    }
-    // Sensor 2: Meta
-    else if (sensores[2] && goku->collidesWithItem(sensores[2])) {
-        static bool victoriaMostrada = false;
-        if (victoriaMostrada) return;
-        victoriaMostrada = true;
-
-        // Detener timers primero
-        timer->stop();
-        gravityTimer->stop();
-        juegoTerminado = true;
-
-        // Efecto visual
-        if (kami) {
-            QGraphicsColorizeEffect *efecto = new QGraphicsColorizeEffect();
-            efecto->setColor(Qt::yellow);
-            efecto->setStrength(0.7);
-            kami->setGraphicsEffect(efecto);
-        }
-
-        // Mostrar mensaje de victoria
-        QMessageBox::information(this, "¡Victoria!", "KamiSama: ¡Has superado la prueba, Goku!");
-
-        // Reproducir sonido después de mostrar el mensaje
-        PlaySound(TEXT("C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/victory.wav"),
-                  NULL, SND_FILENAME | SND_ASYNC);
-
-        // Volver al menú después de un breve retraso
-        QTimer::singleShot(1000, this, [this]() {
-            emit volverAlMenu();
-        });
-    }
-    // Si no está sobre ningún sensor
-    else if (enZonaGravedad) {
+    } else if (goku->collidesWithItem(sensores[2])) {
+        mostrarVictoria();
+    } else if (enZonaGravedad) {
         enZonaGravedad = false;
         gravedadActual = 0.5;
         goku->setGravedad(gravedadActual);
     }
 }
+
+
+
+void Nivel3::mostrarVictoria() {
+    if (juegoTerminado) return;
+    juegoTerminado = true;
+
+    timer->stop();
+    gravityTimer->stop();
+
+    // Mostrar solo la imagen de KamiSama al final
+    QString rutaKami = "C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/kamisama.png";
+    if (QFile::exists(rutaKami)) {
+        QPixmap imgKami(rutaKami);
+        if (!imgKami.isNull()) {
+            kami = new QGraphicsPixmapItem(imgKami.scaled(200, 200));  // Tamaño visible
+            kami->setPos(400, 300);  // Centro de la escena
+            kami->setZValue(10);     // Por encima del fondo
+            scene->addItem(kami);
+        } else {
+            qDebug() << " Imagen Kami cargada pero pixmap es nulo.";
+        }
+    } else {
+        qDebug() << "Ruta del sprite de KamiSama no encontrada.";
+    }
+
+    // Crear mensaje
+    QGraphicsTextItem *texto = new QGraphicsTextItem("KamiSama: ¡Has superado la prueba, Goku!");
+    texto->setFont(QFont("Arial", 18, QFont::Bold));
+    texto->setDefaultTextColor(Qt::black);
+    texto->setZValue(11);
+    texto->setPos(300, 90);
+    scene->addItem(texto);
+
+    // Reproducir sonido
+    BOOL reproducido = PlaySound(TEXT("C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/DragonBall.wav"),
+                                 NULL, SND_FILENAME | SND_ASYNC);
+    if (!reproducido) {
+        qDebug() << " No se pudo reproducir el sonido final.";
+    }
+
+    QTimer::singleShot(10000, this, [this]() {
+        emit volverAlMenu();
+    });
+}
+
+
 
 
 Nivel3::~Nivel3() {
