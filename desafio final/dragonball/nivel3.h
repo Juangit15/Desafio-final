@@ -23,6 +23,7 @@ private slots:
 
 private:
     QGraphicsScene *scene;
+    QGraphicsPixmapItem* kami;
     Jugador *goku;
     QTimer *timer;
     QTimer *gravityTimer;
@@ -30,6 +31,7 @@ private:
     QVector<QGraphicsItem*> sensores;
     qreal gravedadActual;
     bool enZonaGravedad;
+    bool juegoTerminado;
 
     void reproducirAudioFinal();
 
@@ -40,3 +42,4 @@ private:
 };
 
 #endif
+

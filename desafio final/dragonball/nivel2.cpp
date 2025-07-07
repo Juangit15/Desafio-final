@@ -24,7 +24,7 @@ void Nivel2::setupScene() {
     scene->setSceneRect(0, 0, 990, 690);
 
     // Fondo
-    QPixmap fondo("C:/Users/juanm/Downloads/DragonBall/recursos/background2.jpg");
+    QPixmap fondo("C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/background2.jpg");
     if(!fondo.isNull()) {
         QGraphicsPixmapItem *background = new QGraphicsPixmapItem(fondo.scaled(990, 690));
         background->setZValue(-1);
@@ -35,7 +35,7 @@ void Nivel2::setupScene() {
     }
 
     // Mr. Popo
-    QPixmap popoImg("C:/Users/juanm/Downloads/DragonBall/recursos/mrpopo.png");
+    QPixmap popoImg("C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/mrpopo.png");
     if(!popoImg.isNull()) {
         QGraphicsPixmapItem *popo = new QGraphicsPixmapItem(popoImg.scaled(140, 120));
         popo->setPos(800, 500);
@@ -113,14 +113,14 @@ void Nivel2::crearPlataformas() {
 
     // Plataforma final
     QGraphicsRectItem *final = new QGraphicsRectItem(0, 0, 200, 30);
-    final->setPos(700, 150);
+    final->setPos(740, 150);
     final->setBrush(Qt::gray);
     scene->addItem(final);
     plataformas.append(final);
 }
 
 void Nivel2::crearObstaculos() {
-    QPixmap bloqueTex("C:/Users/juanm/Downloads/DragonBall/recursos/objetomr.png");
+    QPixmap bloqueTex("C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/objetomr.png");
     qreal yBase = plataformas[0]->y() - 40;
 
     for (int i = 0; i < 3; i++) {
@@ -135,7 +135,7 @@ void Nivel2::crearObstaculos() {
 
     // Zona objetivo
     QGraphicsEllipseItem *target = new QGraphicsEllipseItem(0, 0, 120, 120);
-    target->setPos(790, 80);
+    target->setPos(850, 80);
     target->setBrush(QColor(0, 255, 0, 100));
     scene->addItem(target);
     obstaculos.append(target);
@@ -418,8 +418,8 @@ void Nivel2::resetLevel() {
 
     modoEmpuje = false;
     QString spriteNormal = goku->estaMirandoDerecha() ?
-                               "C:/Users/juanm/Downloads/DragonBall/recursos/camina1g.png" :
-                               "C:/Users/juanm/Downloads/DragonBall/recursos/camina1gL.png";
+                               "C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/camina1g.png" :
+                               "C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/camina1gL.png";
     goku->setPixmap(QPixmap(spriteNormal).scaled(60, 60));
 
     for (int i = 0; i < 3 && i < obstaculos.size(); i++) {
@@ -432,3 +432,4 @@ void Nivel2::resetLevel() {
 void Nivel2::volverAlMenu() {
     emit solicitarMenu();
 }
+

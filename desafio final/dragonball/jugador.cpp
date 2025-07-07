@@ -36,16 +36,16 @@ void Jugador::actualizarSprite() {
     QString ruta;
 
     if (enSalto) {
-        ruta = mirandoDerecha ? "C:/Users/juanm/Downloads/DragonBall/recursos/salto2g.png"
-                              : "C:/Users/juanm/Downloads/DragonBall/recursos/salto2gL.png";
+        ruta = mirandoDerecha ? "C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/salto2g.png"
+                              : "C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/salto2gL.png";
     }
     else if (empujando) {
-        ruta = mirandoDerecha ? "C:/Users/juanm/Downloads/DragonBall/recursos/gokuempuje.png"
-                              : "C:/Users/juanm/Downloads/DragonBall/recursos/gokuempujeL.png";
+        ruta = mirandoDerecha ? "C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/gokuempuje.png"
+                              : "C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/gokuempujeL.png";
     }
     else {
-        ruta = mirandoDerecha ? "C:/Users/juanm/Downloads/DragonBall/recursos/camina1g.png"
-                              : "C:/Users/juanm/Downloads/DragonBall/recursos/camina1gL.png";
+        ruta = mirandoDerecha ? "C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/camina1g.png"
+                              : "C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/camina1gL.png";
     }
 
     QPixmap pixmap(ruta);
@@ -95,28 +95,67 @@ void Jugador::mover(const QVector<QGraphicsRectItem*>& plataformas) {
     actualizarSprite();
 }
 
-// 🆕 NUEVA FUNCIÓN SOLO PARA NIVEL 3
+//  NUEVA FUNCIÓN SOLO PARA NIVEL 3
 void Jugador::moverConGravedad(const QVector<QGraphicsRectItem*>& plataformas, qreal gravedadLocal) {
+    // Aplicar gravedad
     velocidadY += gravedadLocal;
     moveBy(0, velocidadY);
 
     bool sobrePlataforma = false;
+    QRectF playerRect = sceneBoundingRect();
 
     for (QGraphicsRectItem* plataforma : plataformas) {
-        QRectF platRect = plataforma->sceneBoundingRect();
-        QRectF gokuFeet = QRectF(
-            x() + boundingRect().width() * 0.2,
-            y() + boundingRect().height() - 5,
-            boundingRect().width() * 0.6,
-            5
-            );
+        QRectF platformRect = plataforma->sceneBoundingRect();
 
-        if (gokuFeet.intersects(platRect) && velocidadY >= 0) {
-            setY(plataforma->y() - boundingRect().height());
-            velocidadY = 0;
-            enSalto = false;
-            sobrePlataforma = true;
-            break;
+        if (gravedadLocal > 0) { // Gravedad normal
+            // Área de pies (parte inferior del jugador)
+            QRectF feetArea(
+                playerRect.left() + playerRect.width() * 0.2,
+                playerRect.bottom() - 5,  // Pequeña área en los pies
+                playerRect.width() * 0.6,
+                10
+                );
+
+            // Parte superior de la plataforma
+            QRectF platformTop(
+                platformRect.left(),
+                platformRect.top(),
+                platformRect.width(),
+                10  // Pequeña área en la parte superior
+                );
+
+            if (feetArea.intersects(platformTop) && velocidadY >= 0) {
+                setY(platformRect.top() - boundingRect().height());
+                velocidadY = 0;
+                enSalto = false;
+                sobrePlataforma = true;
+                break;
+            }
+        }
+        else { // Gravedad invertida
+            // Área de cabeza (parte superior del jugador)
+            QRectF headArea(
+                playerRect.left() + playerRect.width() * 0.2,
+                playerRect.top(),
+                playerRect.width() * 0.6,
+                10
+                );
+
+            // Parte inferior de la plataforma
+            QRectF platformBottom(
+                platformRect.left(),
+                platformRect.bottom() - 10,
+                platformRect.width(),
+                10
+                );
+
+            if (headArea.intersects(platformBottom) && velocidadY <= 0) {
+                setY(platformRect.bottom());
+                velocidadY = 0;
+                enSalto = false;
+                sobrePlataforma = true;
+                break;
+            }
         }
     }
 
@@ -124,8 +163,17 @@ void Jugador::moverConGravedad(const QVector<QGraphicsRectItem*>& plataformas, q
         enSalto = true;
     }
 
+    // Rotación visual cuando está en gravedad invertida
+    if (gravedadLocal < 0) {
+        setTransformOriginPoint(boundingRect().center());
+        setRotation(180);
+    } else {
+        setRotation(0);
+    }
+
     actualizarSprite();
 }
+
 
 void Jugador::reiniciarEstado() {
     velocidadY = 0;
@@ -151,7 +199,11 @@ void Jugador::keyPressEvent(QKeyEvent *event) {
         break;
     case Qt::Key_Space:
         if (!enSalto) {
-            velocidadY = -12;
+            if (gravedad < 0) {
+                velocidadY = +12; // salto "hacia abajo" en gravedad invertida
+            } else {
+                velocidadY = -12; // salto normal hacia arriba
+            }
             enSalto = true;
             actualizarSprite();
         }
@@ -161,8 +213,10 @@ void Jugador::keyPressEvent(QKeyEvent *event) {
         break;
     case Qt::Key_S:
         break;
+
     }
 }
+
 
 void Jugador::boostJump(qreal extraForce) {
     if (velocidadY >= 0) {

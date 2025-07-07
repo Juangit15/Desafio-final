@@ -7,7 +7,7 @@
 #include <QDebug>
 
 Nivel1::Nivel1(QWidget *parent) : QGraphicsView(parent), menuMostrado(false) {
-    QPixmap fondoPixmap("C:/Users/juanm/Downloads/DragonBall/recursos/torre.png");
+    QPixmap fondoPixmap("C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/torre.png");
     scene = new QGraphicsScene(this);
     scene->setSceneRect(0, 0, fondoPixmap.width(), fondoPixmap.height());
     setScene(scene);
@@ -18,7 +18,7 @@ Nivel1::Nivel1(QWidget *parent) : QGraphicsView(parent), menuMostrado(false) {
     fondo->setZValue(-10);
     scene->addItem(fondo);
 
-    QPixmap nubeTexture("C:/Users/juanm/Downloads/DragonBall/recursos/nube.png");
+    QPixmap nubeTexture("C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/nube.png");
     if (nubeTexture.isNull()) {
         nubeTexture = QPixmap(200, 20);
         nubeTexture.fill(Qt::lightGray);

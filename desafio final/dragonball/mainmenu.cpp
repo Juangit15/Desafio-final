@@ -45,7 +45,7 @@ void MainMenu::setupUI() {
     menuLayout->addWidget(nivel3Btn);
 
     // Cargar imagen de fondo
-    QPixmap fondo("C:/Users/juanm/Downloads/DragonBall/recursos/backmenu.png"); // Usar sistema de recursos
+    QPixmap fondo("C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/backmenu.png"); // Usar sistema de recursos
     background->setPixmap(fondo);
 
     // Añadir el widget del menú al layout principal

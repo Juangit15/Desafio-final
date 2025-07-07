@@ -2,7 +2,7 @@
 #include <QPixmap>
 
 Enemigo::Enemigo() {
-    setPixmap(QPixmap("C:/Users/juanm/Downloads/DragonBall/recursos/enemi.png").scaled(50, 50));
+    setPixmap(QPixmap("C:/Users/juanm/Documents/GitHub/Desafio-final/desafio final/dragonball/recursos/enemi.png").scaled(50, 50));
     direccion = 1;
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Enemigo::mover);

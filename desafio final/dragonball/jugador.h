@@ -16,13 +16,14 @@ public:
     void moverConGravedad(const QVector<QGraphicsRectItem*>& plataformas, qreal gravedadLocal);
     void keyPressEvent(QKeyEvent *event) override;
     void setGravedad(qreal nuevaGravedad);
+    void setMirandoDerecha(bool derecha);
     bool estaMirandoDerecha() const;
     bool isOnPlatform(QGraphicsItem *platform) const;
     qreal getVelocidadY() const { return velocidadY; }
     bool estaEmpujando() const { return empujando; }
     void setEmpujando(bool empujar);
     void reiniciarEstado();
-
+    bool estaEnGravedadInvertida() const { return gravedad < 0; }
 
 signals:
     void solicitarMenu();
